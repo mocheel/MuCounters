@@ -24,6 +24,17 @@ num WebView. Abra `android/` no Android Studio e use *Build > Build APK(s)*. O b
 copia `index.html`, `jogo.js`, `personagens.js`, `personagens/` e `icons/` para dentro
 do APK, então basta editar os arquivos do jogo e gerar o APK de novo.
 
+**Opção 3: APK pela linha de comando (sem Android Studio).** No Ubuntu:
+
+```bash
+sudo apt install aapt dalvik-exchange zipalign apksigner android-sdk-platform-23
+ANDROID_JAR=/usr/lib/android-sdk/platforms/android-23/android.jar android/build-apk.sh
+```
+
+O APK sai em `android/build/memoria-turma-do-bento.apk`, assinado com uma chave de
+debug. Para instalar no celular, copie o arquivo e permita "instalar apps de fontes
+desconhecidas" quando o Android pedir.
+
 ## Testar no computador
 
 Abra `index.html` no navegador (use o modo celular das ferramentas de desenvolvedor).

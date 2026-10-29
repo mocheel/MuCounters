@@ -2,6 +2,7 @@
 <resources>
     <style name="Tema" parent="android:Theme.Material.Light.NoActionBar">
         <item name="android:statusBarColor">#F4A62A</item>
-        <item name="android:windowBackground">@android:color/white</item>
+        <item name="android:windowBackground">@color/fundo</item>
+        <item name="android:windowLightStatusBar">true</item>
     </style>
 </resources>
