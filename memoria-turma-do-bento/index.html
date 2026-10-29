@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#F4A62A">
+<meta name="mobile-web-app-capable" content="yes">
+<title>Memória da Turma do Bento</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon.svg">
+<style>
+  :root {
+    --fundo: #FFF6E5;
+    --texto: #4A3B2A;
+    --destaque: #F4A62A;
+    --verso: #3FA7D6;
+    --carta: #FFFFFF;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; height: 100%; }
+  body {
+    background: var(--fundo);
+    color: var(--texto);
+    font-family: "Trebuchet MS", "Segoe UI", Roboto, sans-serif;
+    display: flex; flex-direction: column; align-items: center;
+    padding: env(safe-area-inset-top) 16px env(safe-area-inset-bottom);
+    user-select: none;
+    overscroll-behavior: none;
+  }
+  h1 { font-size: 1.5rem; margin: 16px 0 4px; text-align: center; }
+  h1 span { color: var(--destaque); }
+
+  .tela { display: none; width: 100%; max-width: 480px; flex: 1; flex-direction: column; align-items: center; }
+  .tela.ativa { display: flex; }
+
+  /* Menu */
+  .turma { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin: 16px 0 24px; }
+  .turma .avatar { width: 52px; height: 52px; }
+  .botao {
+    width: 100%; max-width: 320px; padding: 16px; margin: 6px 0;
+    border: none; border-radius: 16px; font-size: 1.15rem; font-weight: bold;
+    color: #fff; background: var(--destaque); box-shadow: 0 4px 0 rgba(0,0,0,.18);
+    font-family: inherit;
+  }
+  .botao:active { transform: translateY(3px); box-shadow: 0 1px 0 rgba(0,0,0,.18); }
+  .botao.azul { background: var(--verso); }
+  .botao.verde { background: #59C36A; }
+  .botao.cinza { background: #A89A88; }
+  .recorde { font-size: .85rem; opacity: .8; margin-top: 2px; }
+
+  /* Jogo */
+  .placar { display: flex; justify-content: space-between; width: 100%; margin: 12px 0; font-weight: bold; gap: 8px; }
+  .placar div { background: #fff; border-radius: 12px; padding: 8px 12px; flex: 1; text-align: center; box-shadow: 0 2px 0 rgba(0,0,0,.08); }
+  .placar small { display: block; font-size: .7rem; font-weight: normal; opacity: .7; }
+  .tabuleiro { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; width: 100%; }
+  .carta { aspect-ratio: 3 / 4; perspective: 600px; cursor: pointer; }
+  .carta .interior {
+    position: relative; width: 100%; height: 100%;
+    transition: transform .35s; transform-style: preserve-3d;
+  }
+  .carta.virada .interior, .carta.par .interior { transform: rotateY(180deg); }
+  .face {
+    position: absolute; inset: 0; border-radius: 14px; backface-visibility: hidden;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    box-shadow: 0 3px 0 rgba(0,0,0,.15);
+  }
+  .verso {
+    background: var(--verso);
+    background-image: radial-gradient(rgba(255,255,255,.25) 2px, transparent 2px);
+    background-size: 14px 14px;
+    color: #fff; font-size: 2rem; font-weight: bold;
+  }
+  .verso span { background: var(--destaque); border-radius: 50%; width: 52%; aspect-ratio: 1; display: flex; align-items: center; justify-content: center; border: 3px solid #fff; }
+  .frente { background: var(--carta); transform: rotateY(180deg); padding: 6px; }
+  .frente .avatar { width: 78%; }
+  .frente .nome { font-size: .75rem; font-weight: bold; margin-top: 4px; text-align: center; line-height: 1.1; }
+  .carta.par .frente { outline: 3px solid #59C36A; animation: pulo .4s; }
+  .carta.erro .frente { animation: treme .35s; }
+  @keyframes pulo { 50% { transform: rotateY(180deg) scale(1.08); } }
+  @keyframes treme { 25% { transform: rotateY(180deg) translateX(-5px); } 75% { transform: rotateY(180deg) translateX(5px); } }
+  .rodape { margin: 16px 0; width: 100%; display: flex; justify-content: center; }
+  .rodape .botao { max-width: 200px; font-size: 1rem; padding: 10px; }
+
+  /* Avatar */
+  .avatar { aspect-ratio: 1; border-radius: 50%; overflow: hidden; display: block; }
+  .avatar img { width: 100%; height: 100%; object-fit: contain; }
+
+  /* Vitória */
+  .vitoria { text-align: center; justify-content: center; }
+  .estrelas { font-size: 3rem; letter-spacing: 6px; margin: 8px 0; }
+  .estrelas .apagada { opacity: .2; }
+  .confete { position: fixed; top: -20px; width: 10px; height: 14px; border-radius: 2px; pointer-events: none; animation: cai linear forwards; }
+  @keyframes cai { to { transform: translateY(110vh) rotate(720deg); } }
+</style>
+</head>
+<body>
+  <h1>Memória da <span>Turma do Bento</span></h1>
+
+  <section id="menu" class="tela ativa">
+    <div class="turma" id="turma"></div>
+    <button class="botao verde" data-pares="4">Fácil · 4 pares<div class="recorde" data-recorde="4"></div></button>
+    <button class="botao" data-pares="6">Médio · 6 pares<div class="recorde" data-recorde="6"></div></button>
+    <button class="botao azul" data-pares="8">Difícil · 8 pares<div class="recorde" data-recorde="8"></div></button>
+  </section>
+
+  <section id="jogo" class="tela">
+    <div class="placar">
+      <div><small>Jogadas</small><span id="jogadas">0</span></div>
+      <div><small>Pares</small><span id="pares">0/0</span></div>
+      <div><small>Tempo</small><span id="tempo">0:00</span></div>
+    </div>
+    <div class="tabuleiro" id="tabuleiro"></div>
+    <div class="rodape"><button class="botao cinza" id="voltar">Menu</button></div>
+  </section>
+
+  <section id="fim" class="tela vitoria">
+    <h2>Parabéns! 🎉</h2>
+    <div class="estrelas" id="estrelas"></div>
+    <p id="resumo"></p>
+    <p id="novoRecorde" style="font-weight:bold;color:#59C36A"></p>
+    <button class="botao verde" id="denovo">Jogar de novo</button>
+    <button class="botao cinza" id="menuFim">Menu</button>
+  </section>
+
+  <script src="personagens.js"></script>
+  <script src="jogo.js"></script>
+</body>
+</html>
